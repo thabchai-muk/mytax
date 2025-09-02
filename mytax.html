@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>โปรแกรมคำนวณภาษีเงินได้บุคคลธรรมดา</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;700&display=swap">
+    <style>
+        body {
+            font-family: 'Sarabun', sans-serif;
+        }
+        .form-input {
+            @apply w-full px-4 py-2 bg-gray-50 border border-gray-300 rounded-lg text-gray-800 focus:outline-none focus:ring-2 focus:ring-cyan-500 transition duration-200;
+        }
+        .form-label {
+            @apply block text-gray-700 text-sm font-bold mb-2;
+        }
+        .form-label-sm {
+             @apply block text-gray-600 text-sm font-medium mb-1;
+        }
+        .calculate-button {
+            @apply w-full bg-gradient-to-r from-pink-500 to-rose-600 hover:from-pink-600 hover:to-rose-700 text-white font-bold py-3 px-4 rounded-lg focus:outline-none focus:shadow-outline transition duration-300 ease-in-out transform hover:scale-105 shadow-lg;
+        }
+        .result-card {
+            @apply bg-white p-6 rounded-xl shadow-lg mt-6 border border-gray-200;
+        }
+        .result-title {
+            @apply text-xl font-bold text-gray-800 mb-4;
+        }
+        .result-item {
+            @apply flex justify-between items-center py-3 border-b border-gray-200;
+        }
+        .result-label {
+            @apply text-gray-600;
+        }
+        .result-value {
+            @apply text-lg font-semibold text-gray-900;
+        }
+        .result-total {
+            @apply text-2xl font-bold text-cyan-600;
+        }
+        .tax-tier-table {
+            @apply min-w-full bg-white mt-4 border border-gray-200 rounded-lg;
+        }
+        .tax-tier-table th, .tax-tier-table td {
+            @apply px-4 py-2 border-b text-left text-sm;
+        }
+        .tax-tier-table th {
+            @apply bg-gray-100 font-semibold text-gray-700;
+        }
+        .tax-tier-table td {
+            @apply text-gray-600;
+        }
+        .deduction-group {
+            @apply space-y-4 p-4 bg-slate-50 rounded-lg border border-gray-200;
+        }
+        .deduction-title {
+            @apply font-semibold text-gray-800 text-base;
+        }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-blue-50 to-teal-50 min-h-screen flex items-center justify-center p-4">
+
+    <div class="max-w-6xl w-full mx-auto">
+        <div class="bg-white p-8 rounded-2xl shadow-xl border border-gray-200">
+            <h1 class="text-3xl font-bold text-center text-gray-800 mb-2 bg-gradient-to-r from-cyan-600 to-blue-800 text-transparent bg-clip-text">โปรแกรมคำนวณภาษี 2568</h1>
+            <p class="text-center text-gray-500 mb-8">สำหรับเงินได้บุคคลธรรมดา</p>
+
+            <!-- Input Form -->
+            <div class="grid md:grid-cols-3 gap-8">
+                <!-- Main Inputs Column -->
+                <div class="md:col-span-2 space-y-6">
+                    <!-- Income and Withholding Tax -->
+                    <div>
+                        <h2 class="text-xl font-bold text-gray-800 mb-3 border-b-2 border-cyan-200 pb-2">1. เงินได้ และ ภาษีหัก ณ ที่จ่าย</h2>
+                        <div class="grid sm:grid-cols-2 gap-6">
+                            <div>
+                                <label for="annualIncome" class="form-label">เงินได้พึงประเมินต่อปี</label>
+                                <input type="number" id="annualIncome" class="form-input" placeholder="เช่น 750000" min="0">
+                            </div>
+                            <div>
+                                <label for="withholdingTax" class="form-label">ภาษีที่ถูกหัก ณ ที่จ่ายไว้แล้ว</label>
+                                <input type="number" id="withholdingTax" class="form-input" placeholder="เช่น 15000" min="0">
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Deductions -->
+                    <div>
+                        <h2 class="text-xl font-bold text-gray-800 mb-3 border-b-2 border-cyan-200 pb-2">2. ค่าลดหย่อน</h2>
+                        <div class="grid sm:grid-cols-2 gap-6">
+                            <div class="deduction-group">
+                                <h3 class="deduction-title">ส่วนตัวและครอบครัว</h3>
+                                <div>
+                                    <label for="deduct_personal" class="form-label-sm">ส่วนตัว</label>
+                                    <input type="number" id="deduct_personal" class="form-input bg-gray-200" value="60000" readonly>
+                                </div>
+                                <div>
+                                    <label for="deduct_spouse" class="form-label-sm">คู่สมรส (ไม่มีเงินได้)</label>
+                                    <input type="number" id="deduct_spouse" class="form-input" placeholder="สูงสุด 60,000" min="0">
+                                </div>
+                                <div>
+                                    <label for="deduct_child" class="form-label-sm">บุตร</label>
+                                    <input type="number" id="deduct_child" class="form-input" placeholder="ตามเงื่อนไข" min="0">
+                                </div>
+                                 <div>
+                                    <label for="deduct_parents" class="form-label-sm">อุปการะบิดามารดา</label>
+                                    <input type="number" id="deduct_parents" class="form-input" placeholder="สูงสุด 60,000" min="0">
+                                </div>
+                            </div>
+
+                            <div class="deduction-group">
+                                <h3 class="deduction-title">ประกันและการลงทุน</h3>
+                                <div>
+                                    <label for="deduct_social_security" class="form-label-sm">ประกันสังคม</label>
+                                    <input type="number" id="deduct_social_security" class="form-input" placeholder="สูงสุด 9,000" min="0">
+                                </div>
+                                <div>
+                                    <label for="deduct_life_health_insurance" class="form-label-sm">ประกันชีวิต + ประกันสุขภาพ</label>
+                                    <input type="number" id="deduct_life_health_insurance" class="form-input" placeholder="สูงสุด 100,000" min="0">
+                                </div>
+                                <div>
+                                    <label for="deduct_pvd_ssf_rmf" class="form-label-sm">กองทุน (PVD, SSF, RMF, กบข.)</label>
+                                    <input type="number" id="deduct_pvd_ssf_rmf" class="form-input" placeholder="สูงสุด 500,000" min="0">
+                                </div>
+                                <div>
+                                    <label for="deduct_annuity" class="form-label-sm">ประกันบำนาญ</label>
+                                    <input type="number" id="deduct_annuity" class="form-input" placeholder="สูงสุด 200,000" min="0">
+                                </div>
+                            </div>
+                            
+                            <div class="deduction-group">
+                                <h3 class="deduction-title">กระตุ้นเศรษฐกิจ</h3>
+                                 <div>
+                                    <label for="deduct_home_loan_interest" class="form-label-sm">ดอกเบี้ยเงินกู้ที่อยู่อาศัย</label>
+                                    <input type="number" id="deduct_home_loan_interest" class="form-input" placeholder="สูงสุด 100,000" min="0">
+                                </div>
+                            </div>
+
+                             <div class="deduction-group">
+                                <h3 class="deduction-title">เงินบริจาค</h3>
+                                <div>
+                                    <label for="deduct_donation" class="form-label-sm">เงินบริจาค (ทั่วไป, การศึกษา, ฯลฯ)</label>
+                                    <input type="number" id="deduct_donation" class="form-input" placeholder="ตามสิทธิ์" min="0">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tax Rate Table Column -->
+                <div class="md:col-span-1">
+                    <div class="sticky top-6">
+                         <h3 class="form-label font-bold text-lg mb-3 text-center">อัตราภาษีเงินได้บุคคลธรรมดา</h3>
+                         <table class="w-full text-sm text-left text-gray-600">
+                             <thead class="text-xs text-gray-700 uppercase bg-gray-50 rounded-lg">
+                                 <tr>
+                                     <th scope="col" class="px-4 py-2">เงินได้สุทธิ</th>
+                                     <th scope="col" class="px-4 py-2 text-center">อัตราภาษี</th>
+                                 </tr>
+                             </thead>
+                             <tbody>
+                                 <tr class="bg-white border-b"><td>0 - 150,000</td><td class="text-center">ยกเว้น</td></tr>
+                                 <tr class="bg-white border-b"><td>150,001 - 300,000</td><td class="text-center">5%</td></tr>
+                                 <tr class="bg-white border-b"><td>300,001 - 500,000</td><td class="text-center">10%</td></tr>
+                                 <tr class="bg-white border-b"><td>500,001 - 750,000</td><td class="text-center">15%</td></tr>
+                                 <tr class="bg-white border-b"><td>750,001 - 1,000,000</td><td class="text-center">20%</td></tr>
+                                 <tr class="bg-white border-b"><td>1,000,001 - 2,000,000</td><td class="text-center">25%</td></tr>
+                                 <tr class="bg-white border-b"><td>2,000,001 - 5,000,000</td><td class="text-center">30%</td></tr>
+                                 <tr class="bg-white"><td>มากกว่า 5,000,000</td><td class="text-center">35%</td></tr>
+                             </tbody>
+                         </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Calculate Button -->
+            <div class="mt-8">
+                <button id="calculateBtn" class="calculate-button">คำนวณภาษี</button>
+            </div>
+        </div>
+
+        <!-- Result Display -->
+        <div id="result" class="result-card hidden">
+            <h2 class="result-title text-center">สรุปผลการคำนวณภาษี</h2>
+            <div class="space-y-2">
+                 <div class="result-item">
+                    <span class="result-label">เงินได้พึงประเมิน</span>
+                    <span class="result-value" id="incomeResult"></span>
+                </div>
+                <div class="result-item">
+                    <span class="result-label">หัก ค่าใช้จ่าย (50% ไม่เกิน 100,000)</span>
+                    <span class="result-value" id="expensesResult"></span>
+                </div>
+                <div class="result-item">
+                    <span class="result-label">หัก ค่าลดหย่อนทั้งหมด</span>
+                    <span class="result-value" id="deductionsResult"></span>
+                </div>
+                <div class="result-item !border-cyan-300 border-t-2 pt-4 mt-4">
+                    <span class="result-label font-bold">คงเหลือเงินได้สุทธิ</span>
+                    <span class="result-value text-cyan-700" id="netIncomeResult"></span>
+                </div>
+            </div>
+             <div class="mt-8">
+                <h3 class="result-title text-center">การคำนวณภาษีตามขั้นบันได</h3>
+                <div class="overflow-x-auto">
+                    <table class="tax-tier-table">
+                        <thead>
+                            <tr>
+                                <th>เงินได้สุทธิ</th>
+                                <th>อัตราภาษี</th>
+                                <th>ฐานภาษีในแต่ละขั้น</th>
+                                <th>ภาษีที่คำนวณได้</th>
+                            </tr>
+                        </thead>
+                        <tbody id="taxBreakdown"></tbody>
+                    </table>
+                </div>
+            </div>
+            
+            <div class="text-center bg-cyan-50 p-6 rounded-lg mt-8">
+                <p class="text-lg text-gray-700">ภาษีที่ต้องชำระทั้งหมด (ตามคำนวณ)</p>
+                <p class="result-total mt-1" id="totalTaxResult"></p>
+            </div>
+
+            <!-- Final Payment Summary -->
+            <div class="mt-8 border-t-2 border-dashed pt-6">
+                <h3 class="result-title text-center">สรุปยอดชำระ/ขอคืน</h3>
+                <div class="space-y-2 max-w-md mx-auto">
+                    <div class="result-item">
+                        <span class="result-label">ภาษีที่คำนวณได้</span>
+                        <span class="result-value" id="finalCalcTax"></span>
+                    </div>
+                    <div class="result-item">
+                        <span class="result-label">ภาษีหัก ณ ที่จ่าย (ชำระไว้แล้ว)</span>
+                        <span class="result-value" id="finalWithholdingTax"></span>
+                    </div>
+                    <div id="finalResultContainer" class="result-item p-4 rounded-lg mt-4 font-bold">
+                        <span class="text-lg" id="finalResultLabel"></span>
+                        <span class="text-2xl" id="finalResultValue"></span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('calculateBtn').addEventListener('click', function() {
+            // 1. Get Inputs
+            const annualIncome = parseFloat(document.getElementById('annualIncome').value) || 0;
+            const withholdingTax = parseFloat(document.getElementById('withholdingTax').value) || 0;
+
+            // Get all deduction values
+            const deductionIds = [
+                'deduct_personal', 'deduct_spouse', 'deduct_child', 'deduct_parents',
+                'deduct_social_security', 'deduct_life_health_insurance', 'deduct_pvd_ssf_rmf',
+                'deduct_annuity', 'deduct_home_loan_interest', 'deduct_donation'
+            ];
+            const totalDeductions = deductionIds.reduce((sum, id) => {
+                return sum + (parseFloat(document.getElementById(id).value) || 0);
+            }, 0);
+
+            if (annualIncome <= 0) {
+                alert('กรุณากรอกเงินได้พึงประเมินต่อปีให้ถูกต้อง');
+                return;
+            }
+
+            // 2. Calculations
+            const expenses = Math.min(annualIncome * 0.5, 100000);
+            const incomeAfterExpenses = annualIncome - expenses;
+            const netIncome = Math.max(0, incomeAfterExpenses - totalDeductions);
+
+            // 3. Tax Calculation
+            const taxTiers = [
+                { limit: 150000, rate: 0.00, label: '0 - 150,000' }, { limit: 300000, rate: 0.05, label: '150,001 - 300,000' },
+                { limit: 500000, rate: 0.10, label: '300,001 - 500,000' }, { limit: 750000, rate: 0.15, label: '500,001 - 750,000' },
+                { limit: 1000000, rate: 0.20, label: '750,001 - 1,000,000' }, { limit: 2000000, rate: 0.25, label: '1,000,001 - 2,000,000' },
+                { limit: 5000000, rate: 0.30, label: '2,000,001 - 5,000,000' }, { limit: Infinity, rate: 0.35, label: '> 5,000,000' }
+            ];
+            let totalTax = 0;
+            let remainingIncome = netIncome;
+            let previousLimit = 0;
+            const taxBreakdownBody = document.getElementById('taxBreakdown');
+            taxBreakdownBody.innerHTML = ''; 
+
+            taxTiers.forEach(tier => {
+                let taxableInTier = 0;
+                if (remainingIncome > 0) {
+                    taxableInTier = Math.min(remainingIncome, tier.limit - previousLimit);
+                }
+                const taxInTier = taxableInTier * tier.rate;
+                totalTax += taxInTier;
+                taxBreakdownBody.innerHTML += `<tr><td>${tier.label}</td><td class="text-center">${tier.rate * 100}%</td><td>${formatCurrency(taxableInTier)}</td><td>${formatCurrency(taxInTier)}</td></tr>`;
+                remainingIncome -= taxableInTier;
+                previousLimit = tier.limit;
+            });
+
+            // 4. Display Results
+            document.getElementById('incomeResult').textContent = formatCurrency(annualIncome);
+            document.getElementById('expensesResult').textContent = `- ${formatCurrency(expenses)}`;
+            document.getElementById('deductionsResult').textContent = `- ${formatCurrency(totalDeductions)}`;
+            document.getElementById('netIncomeResult').textContent = formatCurrency(netIncome);
+            document.getElementById('totalTaxResult').textContent = formatCurrency(totalTax);
+
+            // 5. Final Payment/Refund Calculation and Display
+            const finalAmount = totalTax - withholdingTax;
+            document.getElementById('finalCalcTax').textContent = formatCurrency(totalTax);
+            document.getElementById('finalWithholdingTax').textContent = `- ${formatCurrency(withholdingTax)}`;
+
+            const finalResultLabelEl = document.getElementById('finalResultLabel');
+            const finalResultValueEl = document.getElementById('finalResultValue');
+            const finalResultContainer = document.getElementById('finalResultContainer');
+
+            // Reset classes
+            finalResultContainer.className = 'result-item p-4 rounded-lg mt-4 font-bold flex justify-between items-center';
+
+            if (finalAmount > 0) {
+                finalResultLabelEl.textContent = 'ยอดที่ต้องชำระเพิ่ม';
+                finalResultValueEl.textContent = formatCurrency(finalAmount);
+                finalResultContainer.classList.add('bg-red-100', 'text-red-800', '!border-red-200');
+            } else if (finalAmount < 0) {
+                finalResultLabelEl.textContent = 'ยอดที่ได้รับคืน';
+                finalResultValueEl.textContent = formatCurrency(Math.abs(finalAmount));
+                finalResultContainer.classList.add('bg-green-100', 'text-green-800', '!border-green-200');
+            } else {
+                finalResultLabelEl.textContent = 'ชำระภาษีครบถ้วน';
+                finalResultValueEl.textContent = formatCurrency(0);
+                finalResultContainer.classList.add('bg-gray-100', 'text-gray-800', '!border-gray-200');
+            }
+
+            const resultDiv = document.getElementById('result');
+            resultDiv.classList.remove('hidden');
+            resultDiv.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        });
+        
+        function formatCurrency(number) {
+            return new Intl.NumberFormat('th-TH', { style: 'decimal', minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(number) + ' บาท';
+        }
+    </script>
+</body>
+</html>
+
